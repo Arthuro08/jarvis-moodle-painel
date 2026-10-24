@@ -92,29 +92,65 @@
       padding: 10px 8px;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s;
+      transition: transform 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s;
+      user-select: none;
     }
     .kpi:active { transform: scale(0.97); }
+    .kpi.active {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
     .kpi-num { font-size: 20px; font-weight: 800; line-height: 1.1; }
     .kpi-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .search-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
     .search-bar {
       width: 100%;
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 11px 14px;
+      padding: 11px 36px 11px 14px;
       border-radius: 12px;
       font-size: 14px;
-      margin-bottom: 10px;
       outline: none;
     }
     .search-bar:focus { border-color: var(--accent); }
+    .clear-search {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: var(--muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .clear-search.visible { display: inline-flex; }
+    .results-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding: 0 4px;
+    }
     .filters {
       display: flex;
       gap: 6px;
       overflow-x: auto;
       padding-bottom: 6px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       scrollbar-width: none;
     }
     .filters::-webkit-scrollbar { display: none; }
@@ -140,7 +176,10 @@
       border-radius: 14px;
       padding: 14px;
       margin-bottom: 10px;
+      transition: border-color 0.15s, background 0.15s;
     }
+    .clickable-card { cursor: pointer; }
+    .clickable-card:hover { border-color: rgba(56, 189, 248, 0.45); }
     .card-urgent { border-left: 4px solid var(--urgent); }
     .card-warn { border-left: 4px solid var(--warn); }
     .card-ok { border-left: 4px solid var(--ok); }
@@ -231,6 +270,7 @@
       white-space: pre-line;
       max-height: 260px;
       overflow-y: auto;
+      cursor: default;
     }
     .intro-box.open { display: block; }
     .grade-table {
@@ -303,31 +343,40 @@
     <!-- TAB 1: RADAR -->
     <section id="tab-radar" class="tab-panel active">
       <div class="kpi-grid">
-        <div class="kpi" onclick="setFilter('foco')">
+        <div class="kpi active" id="kpi-card-urgent" data-kpi="urgentes_7d" onclick="setFilter('urgentes_7d')">
           <div class="kpi-num" id="kpi-urgent" style="color:#f87171">0</div>
           <div class="kpi-label">7 Dias</div>
         </div>
-        <div class="kpi" onclick="setFilter('foco')">
+        <div class="kpi active" id="kpi-card-ontime" data-kpi="no_prazo" onclick="setFilter('no_prazo')">
           <div class="kpi-num" id="kpi-ontime" style="color:#34d399">0</div>
           <div class="kpi-label">No Prazo</div>
         </div>
-        <div class="kpi" onclick="setFilter('atrasadas_abertas')">
+        <div class="kpi" id="kpi-card-openlate" data-kpi="atrasadas_abertas" onclick="setFilter('atrasadas_abertas')">
           <div class="kpi-num" id="kpi-openlate" style="color:#fbbf24">0</div>
           <div class="kpi-label">Atraso Abertas</div>
         </div>
-        <div class="kpi" onclick="switchTab('entregues')">
+        <div class="kpi" id="kpi-card-done" data-kpi="entregues" onclick="switchTab('entregues')">
           <div class="kpi-num" id="kpi-done" style="color:#38bdf8">0</div>
           <div class="kpi-label">Entregues</div>
         </div>
       </div>
 
-      <input type="search" id="search-input" class="search-bar" placeholder="🔍 Filtrar por matéria, atividade ou ID..." oninput="renderTasks()" />
+      <div class="search-wrap">
+        <input type="search" id="search-input" class="search-bar" placeholder="🔍 Filtrar por matéria, atividade ou ID..." oninput="renderTasks()" />
+        <button type="button" id="clear-search-btn" class="clear-search" onclick="clearSearch()" title="Limpar busca">✕</button>
+      </div>
 
       <div class="filters">
         <button class="chip active" data-filter="foco" onclick="setFilter('foco')">🎯 Urgentes & No Prazo</button>
+        <button class="chip" data-filter="urgentes_7d" onclick="setFilter('urgentes_7d')">🔥 7 Dias</button>
+        <button class="chip" data-filter="no_prazo" onclick="setFilter('no_prazo')">🟢 No Prazo</button>
         <button class="chip" data-filter="atrasadas_abertas" onclick="setFilter('atrasadas_abertas')">🔓 Atrasadas (Aceitam Envio)</button>
         <button class="chip" data-filter="sem_prazo" onclick="setFilter('sem_prazo')">⚪ Sem Prazo</button>
         <button class="chip" data-filter="todas_pendentes" onclick="setFilter('todas_pendentes')">📋 Todas Pendentes</button>
+      </div>
+
+      <div class="results-bar">
+        <span id="results-count">Carregando...</span>
       </div>
 
       <div id="radar-list"></div>
@@ -423,22 +472,64 @@
       document.getElementById('kpi-done').textContent = done;
     }
 
+    function syncActiveStates() {
+      document.querySelectorAll('.chip').forEach(c => {
+        c.classList.toggle('active', c.dataset.filter === currentFilter);
+      });
+      const kpiUrgent = document.getElementById('kpi-card-urgent');
+      const kpiOntime = document.getElementById('kpi-card-ontime');
+      const kpiOpenlate = document.getElementById('kpi-card-openlate');
+      if (kpiUrgent) kpiUrgent.classList.toggle('active', currentFilter === 'urgentes_7d' || currentFilter === 'foco');
+      if (kpiOntime) kpiOntime.classList.toggle('active', currentFilter === 'no_prazo' || currentFilter === 'foco');
+      if (kpiOpenlate) kpiOpenlate.classList.toggle('active', currentFilter === 'atrasadas_abertas');
+    }
+
     function setFilter(f) {
       currentFilter = f;
-      document.querySelectorAll('.chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.filter === f);
-      });
+      syncActiveStates();
+      switchTab('radar');
+      renderTasks();
+    }
+
+    function clearSearch() {
+      const inp = document.getElementById('search-input');
+      if (inp) inp.value = '';
+      renderTasks();
+    }
+
+    function filterByCourse(courseId) {
+      const course = DATA.cursos.find(c => c.id === courseId);
+      if (!course) return;
+      const inp = document.getElementById('search-input');
+      if (inp) inp.value = course.fullname;
+      currentFilter = 'todas_pendentes';
+      syncActiveStates();
       switchTab('radar');
       renderTasks();
     }
 
     function toggleIntro(id) {
       const el = document.getElementById('intro-' + id);
-      if (el) el.classList.toggle('open');
+      if (!el) return;
+      const isOpen = el.classList.toggle('open');
+      const btn = document.getElementById('btn-intro-' + id);
+      if (btn && btn.dataset.labelOpen && btn.dataset.labelClosed) {
+        btn.textContent = isOpen ? btn.dataset.labelOpen : btn.dataset.labelClosed;
+      }
+    }
+
+    function handleCardClick(e, id) {
+      if (e.target.closest('a, button, .intro-box')) return;
+      toggleIntro(id);
     }
 
     function renderTasks() {
-      const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      const inp = document.getElementById('search-input');
+      const rawQ = inp ? inp.value : '';
+      const q = (rawQ || '').toLowerCase().trim();
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (clearBtn) clearBtn.classList.toggle('visible', q.length > 0);
+
       const list = document.getElementById('radar-list');
       const enriched = DATA.todas_tarefas
         .filter(t => !t.entregue)
@@ -452,6 +543,10 @@
         const cat = t._live.category;
         if (currentFilter === 'foco') {
           return cat === 'urgente' || cat === 'semana' || cat === 'no_prazo';
+        } else if (currentFilter === 'urgentes_7d') {
+          return cat === 'urgente' || cat === 'semana';
+        } else if (currentFilter === 'no_prazo') {
+          return cat === 'no_prazo';
         } else if (currentFilter === 'atrasadas_abertas') {
           return cat === 'atrasada_aberta';
         } else if (currentFilter === 'sem_prazo') {
@@ -466,6 +561,11 @@
         return da - db;
       });
 
+      const countEl = document.getElementById('results-count');
+      if (countEl) {
+        countEl.textContent = `Exibindo ${filtered.length} atividade(s)` + (q ? ` para "${rawQ.trim()}"` : '');
+      }
+
       if (!filtered.length) {
         list.innerHTML = `<div class="empty-state">🎉 Nenhuma atividade encontrada neste filtro!</div>`;
         return;
@@ -474,9 +574,9 @@
       list.innerHTML = filtered.map(t => {
         const st = t._live;
         const anexos = (t.anexos || []).map(a => a.filename).join(', ');
-        const hasIntro = Boolean(t.intro || anexos);
+        const introText = t.intro || 'Sem texto adicional na descrição da atividade no Moodle.';
         return `
-          <div class="card card-${st.cls}">
+          <div class="card card-${st.cls} clickable-card" data-assign-id="${t.assign_id}" onclick="handleCardClick(event, '${t.assign_id}')">
             <div class="card-top">
               <span class="badge badge-${st.cls}">${escapeHtml(st.label)}</span>
               <span class="assign-id">ID: ${t.assign_id}</span>
@@ -489,13 +589,11 @@
             </div>
             <div class="actions-row">
               <a class="btn btn-primary" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">Abrir no Moodle ↗</a>
-              ${hasIntro ? `<button class="btn" onclick="toggleIntro(${t.assign_id})">📄 Ver Enunciado</button>` : ''}
+              <button type="button" class="btn btn-intro-toggle" id="btn-intro-${t.assign_id}" data-label-closed="📄 Ver Enunciado" data-label-open="🔼 Ocultar Enunciado" onclick="toggleIntro('${t.assign_id}')">📄 Ver Enunciado</button>
             </div>
-            ${hasIntro ? `
-              <div class="intro-box" id="intro-${t.assign_id}">
-                ${anexos ? `<strong>📎 Anexos:</strong> ${escapeHtml(anexos)}\n\n` : ''}${escapeHtml(t.intro || 'Sem texto adicional na descrição.')}
-              </div>
-            ` : ''}
+            <div class="intro-box" id="intro-${t.assign_id}">
+              ${anexos ? `<strong>📎 Anexos:</strong> ${escapeHtml(anexos)}\n\n` : ''}${escapeHtml(introText)}
+            </div>
           </div>
         `;
       }).join('');
@@ -505,8 +603,13 @@
       const container = document.getElementById('cursos-list');
       container.innerHTML = DATA.cursos.map(c => {
         const pdfList = (c.pdfs || []).map(p => `• ${escapeHtml(p.filename)} <span style="color:var(--muted)">(${escapeHtml(p.secao)})</span>`).join('\n');
+        const courseTasks = DATA.todas_tarefas.filter(t => t.curso_id === c.id);
+        const taskListHtml = courseTasks.map(t => {
+          const st = calcLiveStatus(t);
+          return `• <strong>${escapeHtml(t.nome)}</strong> — <span style="color:var(--accent)">${escapeHtml(st.label)}</span> (${escapeHtml(t.duedate_fmt)})`;
+        }).join('\n');
         return `
-          <div class="card">
+          <div class="card" data-course-id="${c.id}">
             <div class="card-top">
               <span class="course-tag">Curso ID: ${c.id}</span>
               <span class="assign-id">${escapeHtml(c.shortname)}</span>
@@ -516,12 +619,13 @@
               <span>📝 ${c.tarefas_count} tarefas</span>
               <span>📄 ${c.pdfs_count} arquivos/PDFs</span>
             </div>
-            ${c.pdfs_count > 0 ? `
-              <div class="actions-row">
-                <button class="btn" onclick="toggleIntro('curso-${c.id}')">📂 Ver ${c.pdfs_count} PDFs baixados</button>
-              </div>
-              <div class="intro-box" id="intro-curso-${c.id}">${pdfList}</div>
-            ` : ''}
+            <div class="actions-row">
+              ${c.pdfs_count > 0 ? `<button type="button" class="btn btn-pdfs-toggle" id="btn-intro-curso-${c.id}" data-label-closed="📂 Ver ${c.pdfs_count} PDFs baixados" data-label-open="🔼 Ocultar PDFs" onclick="toggleIntro('curso-${c.id}')">📂 Ver ${c.pdfs_count} PDFs baixados</button>` : ''}
+              ${c.tarefas_count > 0 ? `<button type="button" class="btn btn-tasks-toggle" id="btn-intro-curso-tasks-${c.id}" data-label-closed="📝 Ver ${c.tarefas_count} Tarefas" data-label-open="🔼 Ocultar Tarefas" onclick="toggleIntro('curso-tasks-${c.id}')">📝 Ver ${c.tarefas_count} Tarefas</button>` : ''}
+              ${c.tarefas_count > 0 ? `<button type="button" class="btn btn-primary btn-filter-course" onclick="filterByCourse(${c.id})">🚨 Filtrar no Radar</button>` : ''}
+            </div>
+            ${c.pdfs_count > 0 ? `<div class="intro-box" id="intro-curso-${c.id}">${pdfList}</div>` : ''}
+            ${c.tarefas_count > 0 ? `<div class="intro-box" id="intro-curso-tasks-${c.id}">${taskListHtml}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -556,8 +660,11 @@
       const entregues = DATA.todas_tarefas
         .filter(t => t.entregue)
         .sort((a, b) => (b.duedate || 0) - (a.duedate || 0));
-      container.innerHTML = entregues.map(t => `
-        <div class="card card-ok">
+      container.innerHTML = entregues.map(t => {
+        const anexos = (t.anexos || []).map(a => a.filename).join(', ');
+        const introText = t.intro || 'Sem texto adicional na descrição da atividade.';
+        return `
+        <div class="card card-ok clickable-card" onclick="handleCardClick(event, 'done-${t.assign_id}')">
           <div class="card-top">
             <span class="badge badge-ok">✅ Entregue • ${escapeHtml(t.status_avaliacao)}</span>
             <span class="assign-id">ID: ${t.assign_id}</span>
@@ -570,9 +677,13 @@
           </div>
           <div class="actions-row">
             <a class="btn btn-primary" href="${escapeHtml(t.url)}" target="_blank" rel="noopener">Ver no Moodle ↗</a>
+            <button type="button" class="btn btn-intro-toggle" id="btn-intro-done-${t.assign_id}" data-label-closed="📄 Ver Enunciado" data-label-open="🔼 Ocultar Enunciado" onclick="toggleIntro('done-${t.assign_id}')">📄 Ver Enunciado</button>
+          </div>
+          <div class="intro-box" id="intro-done-${t.assign_id}">
+            ${anexos ? `<strong>📎 Anexos:</strong> ${escapeHtml(anexos)}\n\n` : ''}${escapeHtml(introText)}
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
 
     function switchTab(tab) {
@@ -586,6 +697,7 @@
     }
 
     updateKPIs();
+    syncActiveStates();
     renderTasks();
     renderCursos();
     renderNotas();
