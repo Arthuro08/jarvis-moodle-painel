@@ -493,9 +493,7 @@
             </div>
             ${hasIntro ? `
               <div class="intro-box" id="intro-${t.assign_id}">
-                ${anexos ? `<strong>📎 Anexos:</strong> ${escapeHtml(anexos)}
-
-` : ''}${escapeHtml(t.intro || 'Sem texto adicional na descrição.')}
+                ${anexos ? `<strong>📎 Anexos:</strong> ${escapeHtml(anexos)}\n\n` : ''}${escapeHtml(t.intro || 'Sem texto adicional na descrição.')}
               </div>
             ` : ''}
           </div>
@@ -506,8 +504,7 @@
     function renderCursos() {
       const container = document.getElementById('cursos-list');
       container.innerHTML = DATA.cursos.map(c => {
-        const pdfList = (c.pdfs || []).map(p => `• ${escapeHtml(p.filename)} <span style="color:var(--muted)">(${escapeHtml(p.secao)})</span>`).join('
-');
+        const pdfList = (c.pdfs || []).map(p => `• ${escapeHtml(p.filename)} <span style="color:var(--muted)">(${escapeHtml(p.secao)})</span>`).join('\n');
         return `
           <div class="card">
             <div class="card-top">
