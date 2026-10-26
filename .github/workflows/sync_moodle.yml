@@ -1,0 +1,33 @@
+name: Sync Jarvis Moodle (05h & 16h BRT)
+
+on:
+  schedule:
+    - cron: '0 8,19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-moodle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 pypdf
+
+      - name: Sync Moodle & Update Mobile PWA
+        env:
+          MOODLE_TOKEN: ${{ secrets.MOODLE_TOKEN }}
+          MOODLE_USERID: ${{ secrets.MOODLE_USERID }}
+          USER: ${{ secrets.USER }}
+          SUAP: ${{ secrets.SUAP }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python jarvis.py sync --sem-pdfs
